@@ -12,6 +12,7 @@ MCP server plugin for Claude Code. Provides session-scoped reminders, watchers, 
 - `src/triggers.ts` — TriggerStore and trigger types (remind, watch, await)
 - `src/index.ts` — MCP server, tool registration, notification dispatch
 - `test/triggers.test.ts` — Unit tests for all trigger types
+- `test/e2e.test.ts` — E2E tests: real MCP client against live server
 
 ## Commands
 
