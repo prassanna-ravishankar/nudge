@@ -1,0 +1,19 @@
+{
+  "name": "nudge",
+  "version": "0.1.0",
+  "description": "Claude Code channel plugin for session-scoped reminders, watchers, and awaits",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.10",
+    "typescript": "^5.8.3"
+  }
+}
