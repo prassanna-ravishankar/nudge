@@ -1,10 +1,10 @@
 # nudge
 
-An MCP server that gives Claude Code session-scoped triggers: timers, command watchers, and background process awaits. When a trigger fires, Claude gets a channel notification with your prompt — so it can react to things that happen while you're working.
+MCP server that gives Claude Code session-scoped triggers: timers, command watchers, and background process awaits. When a trigger fires, Claude gets a channel notification with your prompt, so it can react to things happening while you work.
 
 ## Why
 
-Claude Code sessions are synchronous — Claude responds to your messages but can't independently notice that a build finished, a deploy landed, or 10 minutes passed. nudge fills that gap by running triggers in the background and pushing notifications back into the conversation when they fire.
+Claude Code sessions are synchronous. Claude responds to your messages but can't notice on its own that a build finished, a deploy landed, or 10 minutes passed. nudge runs triggers in the background and pushes notifications back into the conversation when they fire.
 
 ## Installation
 
@@ -51,11 +51,11 @@ Polls a shell command at an interval. Fires when the output contains a target st
 
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
-| `cmd` | string | — | Shell command to run each poll |
-| `until` | string | — | String to match in output |
+| `cmd` | string | required | Shell command to run each poll |
+| `until` | string | required | String to match in output |
 | `interval` | string | `"30s"` | Poll interval |
 | `max_attempts` | number | `100` | Max polls before giving up |
-| `prompt` | string | — | Message delivered when condition met |
+| `prompt` | string | required | Message delivered when condition met |
 
 ```
 watch(cmd: "curl -s https://api.example.com/health", until: "ok", interval: "1m", prompt: "API is back up")
@@ -82,8 +82,8 @@ Shows all active triggers with their IDs, prompts, and age.
 
 ```
 list_triggers()
-→ remind-1: check PR review (created 342s ago)
-→ watch-2: API health check (created 120s ago)
+> remind-1: check PR review (created 342s ago)
+> watch-2: API health check (created 120s ago)
 ```
 
 ### `cancel_trigger`
@@ -100,7 +100,7 @@ cancel_trigger(trigger_id: "remind-1")
 
 ## How it works
 
-nudge is an MCP server that communicates over stdio. On startup, it registers 5 tools and provides instructions telling Claude what channel events look like.
+nudge is an MCP server that communicates over stdio. On startup it registers 5 tools and provides instructions telling Claude what channel events look like.
 
 When a trigger fires, nudge sends a `notifications/message` log event with a structured JSON payload:
 
@@ -116,22 +116,22 @@ When a trigger fires, nudge sends a `notifications/message` log event with a str
 
 Claude sees this as a channel event and acts on the prompt.
 
-All state is in-memory. Triggers live only as long as the Claude Code session — no persistence, no cleanup needed.
+All state is in-memory. Triggers live only as long as the Claude Code session. No persistence, no cleanup needed.
 
 ## Architecture
 
 ```
 src/
   index.ts       MCP server, tool registration, notification dispatch
-  triggers.ts    TriggerStore — creates/manages remind, watch, await triggers
+  triggers.ts    TriggerStore: creates/manages remind, watch, await triggers
 test/
-  triggers.test.ts   Unit tests (18) — trigger logic, parsing, cancellation
-  e2e.test.ts        E2E tests (9) — real MCP client against live server
+  triggers.test.ts   Unit tests (18): trigger logic, parsing, cancellation
+  e2e.test.ts        E2E tests (9): real MCP client against live server
 ```
 
-Two files. `TriggerStore` owns all trigger lifecycle (create, fire, cancel). The MCP server layer is thin — it maps tool calls to store methods and wires up `sendLoggingMessage` as the fire callback.
+Two files. `TriggerStore` owns all trigger lifecycle (create, fire, cancel). The MCP server layer is thin: it maps tool calls to store methods and wires up `sendLoggingMessage` as the fire callback.
 
-Each trigger gets a human-readable ID (`remind-1`, `watch-3`). Triggers are one-shot: they auto-remove from the store after firing. Watch has `max_attempts` to prevent infinite polling.
+Each trigger gets a human-readable ID (`remind-1`, `watch-3`). Triggers are one-shot and auto-remove from the store after firing. Watch has `max_attempts` to prevent infinite polling.
 
 ## Development
 
